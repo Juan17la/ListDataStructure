@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>🍝 Thundercat — Sistema de Órdenes</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <header>
+      <h1>Thundercat</h1>
+    </header>
+
+    <main>
+      <section class="left">
+        <h2>Crear nueva orden</h2>
+        <form id="order-form">
+          <label>Nombre del cliente
+            <input id="customer-name" type="text" placeholder="Nombre" required />
+          </label>
+
+          <div class="add-item">
+            <label>Producto
+              <select id="menu-select"></select>
+            </label>
+            <label>Cantidad
+              <input id="menu-qty" type="number" min="1" value="1" />
+            </label>
+            <button id="add-item" type="button">Añadir ítem</button>
+          </div>
+
+          <div id="selected-items" class="selected-items"></div>
+
+          <p>Total: <span id="order-total">$0</span></p>
+
+          <div class="form-actions">
+            <button id="confirm-order" type="button">Confirmar orden</button>
+            <button id="reset-order" type="button">Limpiar</button>
+          </div>
+        </form>
+
+        <hr />
+
+        <h2>Controles</h2>
+        <div class="controls">
+          <button id="btn-advance">Avanzar Primera Orden</button>
+        </div>
+
+      </section>
+
+      <section class="right">
+        <article>
+            <h2>Órdenes Pendientes</h2>
+            <div class="filters">
+            <input id="filter-text" placeholder="Buscar por cliente o id" />
+            <select id="filter-status">
+                <option value="">Todos los estados</option>
+                <option value="RECIBIDA">RECIBIDA</option>
+                <option value="EN_COCINA">EN_COCINA</option>
+                <option value="LISTA">LISTA</option>
+                <option value="ENTREGADA">ENTREGADA</option>
+                <option value="CERRADA">CERRADA</option>
+            </select>
+            </div>
+            <div id="pending-list" class="order-list"></div>
+        </article>
+
+        <article>
+            <h2>Órdenes Atendidas</h2>
+            <div class="filters">
+            <label>Desde <input id="att-from" type="datetime-local" /></label>
+            <label>Hasta <input id="att-to" type="datetime-local" /></label>
+            <input id="att-filter-text" placeholder="Buscar en atendidas" />
+            </div>
+            <div id="attended-list" class="order-list"></div>
+        </article>
+      </section>
+    </main>
+
+    <script type="module" src="./thundercat/dist/main.js"></script>
+  </body>
+</html>
