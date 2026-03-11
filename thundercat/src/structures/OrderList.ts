@@ -1,4 +1,4 @@
-import { Order } from '../models/Order.js';
+import { Order, OrderStatus } from '../models/Order.js';
 import { OrderNode } from '../models/OrderNode.js';
 
 export class OrderList {
@@ -31,6 +31,41 @@ export class OrderList {
     node.setNext(null);
     this.size = Math.max(0, this.size - 1);
     return node.getOrder();
+  }
+
+  /** Remove an order by id from any position in the list. */
+  removeById(orderId: string): Order | null {
+    if (!this.head) return null;
+    if (this.head.getOrder().getId() === orderId) {
+      return this.dequeue();
+    }
+    let prev: OrderNode = this.head;
+    let cur = prev.getNext();
+    while (cur) {
+      if (cur.getOrder().getId() === orderId) {
+        prev.setNext(cur.getNext());
+        cur.setNext(null);
+        this.size = Math.max(0, this.size - 1);
+        return cur.getOrder();
+      }
+      prev = cur;
+      cur = cur.getNext();
+    }
+    return null;
+  }
+
+  /** Advance an order if it is in the expected status; returns true if advanced. */
+  advanceOrderById(orderId: string, expectedStatus: OrderStatus): boolean {
+    let cur = this.head;
+    while (cur) {
+      const o = cur.getOrder();
+      if (o.getId() === orderId && o.getStatus() === expectedStatus) {
+        o.advanceStatus();
+        return true;
+      }
+      cur = cur.getNext();
+    }
+    return false;
   }
 
   advanceOrder(orderId: string): void {

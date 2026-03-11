@@ -1,11 +1,13 @@
 import { MenuItem } from './MenuItem.js';
 
 export enum OrderStatus {
-  RECIBIDA = 'RECIBIDA',
-  EN_COCINA = 'EN_COCINA',
-  LISTA = 'LISTA',
-  ENTREGADA = 'ENTREGADA',
-  CERRADA = 'CERRADA'
+  RECIBIDA           = 'RECIBIDA',
+  EN_COCINA          = 'EN_COCINA',
+  LISTA              = 'LISTA',
+  ENTREGADA          = 'ENTREGADA',
+  CUENTA_SOLICITADA  = 'CUENTA_SOLICITADA',
+  CALCULADA          = 'CALCULADA',
+  PAGADA             = 'PAGADA'
 }
 
 export class Order {
@@ -14,6 +16,7 @@ export class Order {
   private status: OrderStatus;
   private customerName: string;
   private readonly createdAt: Date;
+  private paidAt: Date | null = null;
 
   constructor(id: string, items: MenuItem[], customerName = 'Customer', createdAt?: Date) {
     if (!id) throw new Error('Order id required');
@@ -50,6 +53,10 @@ export class Order {
     return this.createdAt;
   }
 
+  getPaidAt(): Date | null {
+    return this.paidAt;
+  }
+
   getTotal(): number {
     return this.items.reduce((s, it) => s + it.getPrice(), 0);
   }
@@ -57,22 +64,21 @@ export class Order {
   advanceStatus(): void {
     switch (this.status) {
       case OrderStatus.RECIBIDA:
-        this.status = OrderStatus.EN_COCINA;
-        break;
+        this.status = OrderStatus.EN_COCINA; break;
       case OrderStatus.EN_COCINA:
-        this.status = OrderStatus.LISTA;
-        break;
+        this.status = OrderStatus.LISTA; break;
       case OrderStatus.LISTA:
-        this.status = OrderStatus.ENTREGADA;
-        break;
+        this.status = OrderStatus.ENTREGADA; break;
       case OrderStatus.ENTREGADA:
-        this.status = OrderStatus.CERRADA;
+        this.status = OrderStatus.CUENTA_SOLICITADA; break;
+      case OrderStatus.CUENTA_SOLICITADA:
+        this.status = OrderStatus.CALCULADA; break;
+      case OrderStatus.CALCULADA:
+        this.status = OrderStatus.PAGADA;
+        this.paidAt = new Date();
         break;
-      case OrderStatus.CERRADA:
-        // already closed
+      case OrderStatus.PAGADA:
         break;
-      default:
-        this.status = OrderStatus.CERRADA;
     }
   }
 }

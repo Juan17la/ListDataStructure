@@ -17,16 +17,35 @@ const menu: MenuItem[] = [
 ];
 
 const orderList = new OrderList();
-const service = new OrderService(orderList);
-const ui = new UIRenderer('pending-list', 'attended-list');
+const service   = new OrderService(orderList);
+const ui        = new UIRenderer();
 
-// Create 3 sample orders
+// Three sample orders at start
 service.createOrder(uid(), [menu[0], menu[4]], 'Cliente A');
-service.createOrder(uid(), [menu[2]], 'Cliente B');
+service.createOrder(uid(), [menu[2]],           'Cliente B');
 service.createOrder(uid(), [menu[1], menu[3]], 'Cliente C');
 
-// State for building a new order before confirming
+// Items being built for the next new order
 let tempItems: MenuItem[] = [];
+
+function getAllOrders() {
+  return [
+    ...service.getPendingOrders(),
+    ...service.getBillingOrders(),
+    ...service.getPaidOrders(),
+  ];
+}
+
+function refreshAll(): void {
+  ui.render(getAllOrders(), {
+    onRecoger:         (id) => { service.mozoRecogerPedido(id);    refreshAll(); },
+    onElaborar:        (id) => { service.cocinaElaborarPedido(id); refreshAll(); },
+    onServir:          (id) => { service.mozoServirPedido(id);     refreshAll(); },
+    onSolicitarCuenta: (id) => { service.solicitarCuenta(id);      refreshAll(); },
+    onCalcular:        (id) => { service.cajaCalcularTotal(id);    refreshAll(); },
+    onPagar:           (id) => { service.clientePagar(id);         refreshAll(); },
+  });
+}
 
 function updateMenuSelect(): void {
   const sel = document.getElementById('menu-select') as HTMLSelectElement | null;
@@ -41,15 +60,16 @@ function updateMenuSelect(): void {
 }
 
 function updateSelectedItemsView(): void {
-  const div = document.getElementById('selected-items');
+  const div     = document.getElementById('selected-items');
   const totalEl = document.getElementById('order-total');
   if (!div || !totalEl) return;
   div.innerHTML = '';
   let total = 0;
   for (const it of tempItems) {
-    const p = document.createElement('div');
-    p.textContent = `${it.getName()} — $${it.getPrice().toFixed(0)}`;
-    div.appendChild(p);
+    const row = document.createElement('div');
+    row.className = 'selected-item';
+    row.textContent = `${it.getName()} — $${it.getPrice().toFixed(0)}`;
+    div.appendChild(row);
     total += it.getPrice();
   }
   totalEl.textContent = `$${total.toFixed(0)}`;
@@ -57,71 +77,45 @@ function updateSelectedItemsView(): void {
 
 window.addEventListener('load', () => {
   updateMenuSelect();
-
-  const addBtn = document.getElementById('add-item');
-  const sel = document.getElementById('menu-select') as HTMLSelectElement | null;
-  const qty = document.getElementById('menu-qty') as HTMLInputElement | null;
-  const confirmBtn = document.getElementById('confirm-order');
-  const resetBtn = document.getElementById('reset-order');
-  const advanceBtn = document.getElementById('btn-advance');
-
-  const filterText = document.getElementById('filter-text') as HTMLInputElement | null;
-  const filterStatus = document.getElementById('filter-status') as HTMLSelectElement | null;
-  const attFrom = document.getElementById('att-from') as HTMLInputElement | null;
-  const attTo = document.getElementById('att-to') as HTMLInputElement | null;
-  const attFilterText = document.getElementById('att-filter-text') as HTMLInputElement | null;
-
-  function refreshAll(): void {
-    ui.renderPending(service.getPendingOrders(), filterText?.value ?? '',
-      (filterStatus?.value as any) || undefined);
-    const from = attFrom?.value ? new Date(attFrom.value) : undefined;
-    const to = attTo?.value ? new Date(attTo.value) : undefined;
-    ui.renderAttended(service.getAttendedOrders(), from, to, attFilterText?.value ?? '');
-  }
-
   refreshAll();
+
+  const addBtn     = document.getElementById('add-item');
+  const sel        = document.getElementById('menu-select')  as HTMLSelectElement | null;
+  const qty        = document.getElementById('menu-qty')     as HTMLInputElement   | null;
+  const confirmBtn = document.getElementById('confirm-order');
+  const resetBtn   = document.getElementById('reset-order');
 
   addBtn?.addEventListener('click', () => {
     if (!sel || !qty) return;
-    const name = sel.value;
-    const q = Math.max(1, Number(qty.value) || 1);
-    const item = menu.find((m) => m.getName() === name);
+    const item = menu.find((m) => m.getName() === sel.value);
     if (!item) return;
+    const q = Math.max(1, Number(qty.value) || 1);
     for (let i = 0; i < q; i++) tempItems.push(item);
     updateSelectedItemsView();
   });
 
   confirmBtn?.addEventListener('click', () => {
-    const customerInput = document.getElementById('customer-name') as HTMLInputElement | null;
-    if (!customerInput) return;
+    const nameInput = document.getElementById('customer-name') as HTMLInputElement | null;
+    if (!nameInput) return;
     if (tempItems.length === 0) {
-      alert('Add at least one item to the order');
+      alert('Añade al menos un ítem a la orden.');
       return;
     }
+    const customerName = nameInput.value.trim() || 'Cliente';
     const total = tempItems.reduce((s, it) => s + it.getPrice(), 0);
-    const ok = confirm(`Confirm order for ${customerInput.value || 'Cliente'} — Total: $${total.toFixed(0)}?`);
+    const ok = confirm(`¿Confirmar orden para ${customerName}?\nTotal: $${total.toFixed(0)}`);
     if (!ok) return;
-    service.createOrder(uid(), tempItems.slice(), customerInput.value || 'Cliente');
+    service.createOrder(uid(), tempItems.slice(), customerName);
     tempItems = [];
-    (document.getElementById('customer-name') as HTMLInputElement).value = '';
+    nameInput.value = '';
     updateSelectedItemsView();
     refreshAll();
   });
 
   resetBtn?.addEventListener('click', () => {
     tempItems = [];
-    (document.getElementById('customer-name') as HTMLInputElement).value = '';
+    const nameInput = document.getElementById('customer-name') as HTMLInputElement | null;
+    if (nameInput) nameInput.value = '';
     updateSelectedItemsView();
   });
-
-  advanceBtn?.addEventListener('click', () => {
-    service.advanceFirstOrderToAttended();
-    refreshAll();
-  });
-
-  filterText?.addEventListener('input', () => refreshAll());
-  filterStatus?.addEventListener('change', () => refreshAll());
-  attFrom?.addEventListener('change', () => refreshAll());
-  attTo?.addEventListener('change', () => refreshAll());
-  attFilterText?.addEventListener('input', () => refreshAll());
 });

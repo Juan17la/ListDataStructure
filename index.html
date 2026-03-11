@@ -9,72 +9,152 @@
   <body>
     <header>
       <h1>Thundercat</h1>
+      <p>Proceso de atención al cliente</p>
     </header>
 
-    <main>
-      <section class="left">
-        <h2>Crear nueva orden</h2>
-        <form id="order-form">
-          <label>Nombre del cliente
-            <input id="customer-name" type="text" placeholder="Nombre" required />
-          </label>
+    <main class="board">
 
-          <div class="add-item">
-            <label>Producto
-              <select id="menu-select"></select>
-            </label>
-            <label>Cantidad
-              <input id="menu-qty" type="number" min="1" value="1" />
-            </label>
-            <button id="add-item" type="button">Añadir ítem</button>
-          </div>
-
-          <div id="selected-items" class="selected-items"></div>
-
-          <p>Total: <span id="order-total">$0</span></p>
-
-          <div class="form-actions">
-            <button id="confirm-order" type="button">Confirmar orden</button>
-            <button id="reset-order" type="button">Limpiar</button>
-          </div>
-        </form>
-
-        <hr />
-
-        <h2>Controles</h2>
-        <div class="controls">
-          <button id="btn-advance">Avanzar Primera Orden</button>
+      <!-- ══════════════════════════════════════════════════════════════════
+           LANE 1 — CLIENTE
+           Pasos: Solicitar pedido · Solicitar cuenta · Pagar pedido · Fin
+      ═══════════════════════════════════════════════════════════════════ -->
+      <section class="lane lane-cliente">
+        <div class="lane-header">
+          <span class="lane-number">01</span>
+          <h2>Cliente</h2>
         </div>
 
+        <!-- Solicitar Pedido -->
+        <div class="lane-step">
+          <h3 class="step-title">◉ Solicitar Pedido</h3>
+          <form id="order-form">
+            <label>Nombre del cliente
+              <input id="customer-name" type="text" placeholder="Nombre" />
+            </label>
+
+            <div class="add-item">
+              <label>Producto
+                <select id="menu-select"></select>
+              </label>
+              <label>Cant.
+                <input id="menu-qty" type="number" min="1" value="1" />
+              </label>
+              <button id="add-item" type="button">+ Añadir</button>
+            </div>
+
+            <div id="selected-items" class="selected-items"></div>
+            <p class="order-total-row">Total: <span id="order-total">$0</span></p>
+
+            <div class="form-actions">
+              <button id="confirm-order" type="button">Confirmar Pedido</button>
+              <button id="reset-order" type="button">Limpiar</button>
+            </div>
+          </form>
+        </div>
+
+        <!-- Solicitar Cuenta -->
+        <div class="lane-step">
+          <h3 class="step-title">◉ Solicitar Cuenta</h3>
+          <p class="step-hint">Órdenes entregadas — haz clic para pedir la cuenta al mozo.</p>
+          <div id="lane-entregadas" class="order-list"></div>
+        </div>
+
+        <!-- Pagar Pedido -->
+        <div class="lane-step">
+          <h3 class="step-title">◉ Pagar Pedido</h3>
+          <p class="step-hint">Boleta lista — haz clic para pagar y cerrar la orden.</p>
+          <div id="lane-calculadas" class="order-list"></div>
+        </div>
+
+        <!-- Fin -->
+        <div class="lane-step lane-step-fin">
+          <h3 class="step-title">⬤ Fin</h3>
+          <div id="lane-pagadas" class="order-list"></div>
+        </div>
       </section>
 
-      <section class="right">
-        <article>
-            <h2>Órdenes Pendientes</h2>
-            <div class="filters">
-            <input id="filter-text" placeholder="Buscar por cliente o id" />
-            <select id="filter-status">
-                <option value="">Todos los estados</option>
-                <option value="RECIBIDA">RECIBIDA</option>
-                <option value="EN_COCINA">EN_COCINA</option>
-                <option value="LISTA">LISTA</option>
-                <option value="ENTREGADA">ENTREGADA</option>
-                <option value="CERRADA">CERRADA</option>
-            </select>
-            </div>
-            <div id="pending-list" class="order-list"></div>
-        </article>
+      <!-- ══════════════════════════════════════════════════════════════════
+           LANE 2 — MOZO
+           Pasos: Recoger pedido · Servir pedido
+      ═══════════════════════════════════════════════════════════════════ -->
+      <section class="lane lane-mozo">
+        <div class="lane-header">
+          <span class="lane-number">02</span>
+          <h2>Mozo</h2>
+        </div>
 
-        <article>
-            <h2>Órdenes Atendidas</h2>
-            <div class="filters">
-            <label>Desde <input id="att-from" type="datetime-local" /></label>
-            <label>Hasta <input id="att-to" type="datetime-local" /></label>
-            <input id="att-filter-text" placeholder="Buscar en atendidas" />
-            </div>
-            <div id="attended-list" class="order-list"></div>
-        </article>
+        <!-- Recoger Pedido -->
+        <div class="lane-step">
+          <h3 class="step-title">◉ Recoger Pedido</h3>
+          <p class="step-hint">Órdenes recibidas — haz clic para enviar a cocina.</p>
+          <div id="lane-recibidas" class="order-list"></div>
+        </div>
+
+        <!-- Servir Pedido -->
+        <div class="lane-step">
+          <h3 class="step-title">◉ Servir Pedido</h3>
+          <p class="step-hint">Platos listos — haz clic para servir al cliente.</p>
+          <div id="lane-listas" class="order-list"></div>
+        </div>
       </section>
+
+      <!-- ══════════════════════════════════════════════════════════════════
+           LANE 3 — COCINA
+           Paso: Elaborar Pedido
+      ═══════════════════════════════════════════════════════════════════ -->
+      <section class="lane lane-cocina">
+        <div class="lane-header">
+          <span class="lane-number">03</span>
+          <h2>Cocina</h2>
+        </div>
+
+        <!-- Elaborar Pedido -->
+        <div class="lane-step">
+          <h3 class="step-title">◉ Elaborar Pedido</h3>
+          <p class="step-hint">Haz clic en "Pedido Listo" cuando el plato esté preparado.</p>
+          <div id="lane-en-cocina" class="order-list"></div>
+        </div>
+      </section>
+
+      <!-- ══════════════════════════════════════════════════════════════════
+           LANE 4 — CAJA
+           Pasos: Recibir pedido · Esperar · Calcular total · Boleta
+      ═══════════════════════════════════════════════════════════════════ -->
+      <section class="lane lane-caja">
+        <div class="lane-header">
+          <span class="lane-number">04</span>
+          <h2>Caja</h2>
+        </div>
+
+        <!-- Recibir Pedido -->
+        <div class="lane-step">
+          <h3 class="step-title">◉ Recibir Pedido</h3>
+          <p class="step-hint">Órdenes en preparación — Caja registra la comanda.</p>
+          <div id="lane-caja-recibir" class="order-list"></div>
+        </div>
+
+        <!-- Esperar -->
+        <div class="lane-step">
+          <h3 class="step-title">◎ Esperar</h3>
+          <p class="step-hint">Órdenes servidas — Caja espera solicitud de cuenta.</p>
+          <div id="lane-caja-esperar" class="order-list"></div>
+        </div>
+
+        <!-- Calcular Total -->
+        <div class="lane-step">
+          <h3 class="step-title">◉ Calcular Total</h3>
+          <p class="step-hint">Haz clic para calcular el total y generar la boleta.</p>
+          <div id="lane-cuentas" class="order-list"></div>
+        </div>
+
+        <!-- Boleta -->
+        <div class="lane-step">
+          <h3 class="step-title">🧾 Boleta</h3>
+          <p class="step-hint">Boletas generadas (pendientes y pagadas).</p>
+          <div id="lane-boletas" class="order-list"></div>
+        </div>
+      </section>
+
     </main>
 
     <script type="module" src="./thundercat/dist/main.js"></script>
